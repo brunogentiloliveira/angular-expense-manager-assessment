@@ -1,10 +1,8 @@
-import { Category } from "./category";
-
 export interface Expense {
     id: number,
     name: string,
     price: number,
-    category: Category,
+    category: string,
     account: string,
     date: Date
 }

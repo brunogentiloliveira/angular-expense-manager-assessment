@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { DashboardComponent } from "./dashboard/dashboard.component";
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { MaterialModules } from './shared/material.shared';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, DashboardComponent],
+  imports: [RouterOutlet, RouterLink, MaterialModules],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   standalone: true
