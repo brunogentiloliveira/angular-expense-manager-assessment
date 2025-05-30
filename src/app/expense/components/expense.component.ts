@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, Signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit, Signal, ViewChild } from '@angular/core';
 import { ExpenseService } from '../../services/expense.service';
 import { MaterialModules } from '../../shared/material.shared';
 import { CommonModule } from '@angular/common';
@@ -7,10 +7,10 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../category';
-import { provideNativeDateAdapter } from '@angular/material/core';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { Router } from '@angular/router';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 
 @Component({
@@ -23,7 +23,7 @@ import { MatSort } from '@angular/material/sort';
   styleUrl: './expense.component.css',
   standalone: true
 })
-export class ExpenseComponent implements OnInit{
+export class ExpenseComponent implements OnInit, AfterViewInit{
   @ViewChild(MatMenuTrigger) trigger!: MatMenuTrigger;
   @ViewChild(MatPaginator) paginator !: MatPaginator;
   @ViewChild(MatSort) sort !: MatSort;
@@ -47,6 +47,11 @@ export class ExpenseComponent implements OnInit{
       this.getAccounts();
       this.getCategories();
       this.filteredExpenses();
+  }
+
+  ngAfterViewInit(): void {
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
   }
 
   openMenu(){
@@ -76,26 +81,23 @@ export class ExpenseComponent implements OnInit{
   }
 
   filteredExpenses(){
-      const filtered = this.expenses().filter(exp => {
-        const Category = this.selectedCategory ? exp.category === this.selectedCategory : true;
-        const Account = this.selectedAccount ? exp.account === this.selectedAccount : true;
-        const StartDate = this.startDate ? new Date(exp.date) >= new Date(this.startDate) : true;
-        const EndDate = this.endDate ? new Date(exp.date) <= new Date(this.endDate) : true;
+    const filtered = this.expenses().filter(exp => {
+      const Category = this.selectedCategory ? exp.category === this.selectedCategory : true;
+      const Account = this.selectedAccount ? exp.account === this.selectedAccount : true;
+      const StartDate = this.startDate ? new Date(exp.date) >= new Date(this.startDate) : true;
+      const EndDate = this.endDate ? new Date(exp.date) <= new Date(this.endDate) : true;
 
-        return Category && Account && StartDate && EndDate
-      });
+      return Category && Account && StartDate && EndDate
+    })
 
-      this.dataSource = new MatTableDataSource(filtered);
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-
-      this.dataSource.sortingDataAccessor = (item, property) => {
-        if (property === 'date'){
-          return new Date(item.date);
+    this.dataSource.data = filtered;
+    this.dataSource.sortingDataAccessor = (row:Expense, columnName: string) : any => {
+        console.log(row, columnName);
+        if(columnName=="date"){
+          return new Date(row.date);
         }
-
-        return (item as any)[property];
-      };
+        return (row as any)[columnName];
+      }
   }
 
   editExpense(id: number) {
